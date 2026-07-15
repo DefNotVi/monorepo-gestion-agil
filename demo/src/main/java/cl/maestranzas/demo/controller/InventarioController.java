@@ -5,6 +5,7 @@ import cl.maestranzas.demo.model.Inventario;
 import cl.maestranzas.demo.repository.InventarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -22,10 +23,15 @@ public class InventarioController {
         return repository.findAll();
     }
 
-    // HU01: Registrar un nuevo Inventario
-    @PostMapping
-    public Inventario create(@RequestBody Inventario Inventario) {
-        return repository.save(Inventario);
+@PostMapping
+    public ResponseEntity<?> create(@RequestBody Inventario inventario) {
+        // Validar si el número de serie ya está registrado
+        if (repository.findByNumeroSerie(inventario.getNumeroSerie()).isPresent()) {
+            return ResponseEntity.badRequest().body("El número de serie '" + inventario.getNumeroSerie() + "' ya existe en el inventario.");
+        }
+        
+        Inventario nuevoInventario = repository.save(inventario);
+        return ResponseEntity.ok(nuevoInventario);
     }
 
     // HU03: Simular movimiento (Sumar o restar stock)
