@@ -37,6 +37,7 @@ function App() {
   };
 
   // HU01: Registrar un nuevo Inventario
+// HU01: Registrar un nuevo Inventario (Con validación de duplicados)
   const handleSubmit = (e) => {
     e.preventDefault();
     fetch(API_URL, {
@@ -44,11 +45,24 @@ function App() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(formData)
     })
+    .then(async (res) => {
+      if (!res.ok) {
+        // Si el backend responde con error (ej: 400 Bad Request), extraemos el texto del error
+        const msgError = await res.text();
+        throw new Error(msgError);
+      }
+      return res.json();
+    })
     .then(() => {
       fetchInventarios(); // Recargar la lista en tiempo real
       setFormData({ numeroSerie: '', nombre: '', ubicacion: '', stockActual: 0, stockMinimo: 0 }); // Limpiar formulario
+      alert("✅ Componente registrado exitosamente.");
     })
-    .catch(err => console.error("Error al guardar el ítem:", err));
+    .catch(err => {
+      // Muestra la alerta en pantalla con el mensaje enviado desde Spring Boot
+      alert(`❌ Error: ${err.message}`);
+      console.error("Error al guardar el ítem:", err);
+    });
   };
 
   // HU03: Simular movimiento (Sumar o restar stock)
